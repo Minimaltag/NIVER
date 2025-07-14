@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Imagem com Música e Efeitos</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body {
+      background: url('image.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<audio id="music" autoplay loop>
+  <source src="music.mp3" type="audio/mpeg" />
+</audio>
+
+<canvas id="canvas"></canvas>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  // Partículas de luz
+  const particles = [];
+  const colors = ['#FFC0CB', '#FFD700', '#ADFF2F', '#00FFFF', '#FF69B4', '#FFB6C1'];
+
+  function createParticle(x, y) {
+    particles.push({
+      x,
+      y,
+      radius: Math.random() * 6 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      dx: (Math.random() - 0.5) * 2,
+      dy: (Math.random() - 0.5) * 2,
+      life: 100
+    });
+  }
+
+  // Efeito ao tocar
+  function sparkle(e) {
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    for (let i = 0; i < 15; i++) {
+      createParticle(x, y);
+    }
+  }
+
+  document.addEventListener('click', sparkle);
+  document.addEventListener('touchstart', sparkle);
+
+  // Gera luzes aleatórias
+  setInterval(() => {
+    createParticle(Math.random() * width, Math.random() * height);
+  }, 200);
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    particles.forEach((p, i) => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+      p.x += p.dx;
+      p.y += p.dy;
+      p.radius *= 0.96;
+      p.life--;
+      if (p.life <= 0 || p.radius < 0.5) {
+        particles.splice(i, 1);
+      }
+    });
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  // Música com autoplay desbloqueada por interação
+  document.addEventListener('click', () => {
+    const audio = document.getElementById('music');
+    if (audio.paused) {
+      audio.play().catch(() => {});
+    }
+  }, { once: true });
+</script>
+
+</body>
+</html>
